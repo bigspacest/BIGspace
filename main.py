@@ -9,6 +9,7 @@ starts the Flask keep-alive server.
 import os
 import re
 import logging
+import asyncio
 
 import discord
 from discord.ext import commands
@@ -53,6 +54,24 @@ COGS = [
     "moderation",
 ]
 
+# Rotating presence: alternates every 10 seconds between the studio name
+# and the dev credit.
+PRESENCE_STATUSES = [
+    "↪ BIG space studios.",
+    "› Dev: Supskevv",
+]
+PRESENCE_INTERVAL_SECONDS = 10
+
+
+async def rotate_presence():
+    await bot.wait_until_ready()
+    index = 0
+    while not bot.is_closed():
+        status_text = PRESENCE_STATUSES[index % len(PRESENCE_STATUSES)]
+        await bot.change_presence(activity=discord.CustomActivity(name=status_text))
+        index += 1
+        await asyncio.sleep(PRESENCE_INTERVAL_SECONDS)
+
 
 @bot.event
 async def on_ready():
@@ -62,7 +81,9 @@ async def on_ready():
         log.info(f"Slash commands synced: {len(synced)}")
     except Exception as e:
         log.error(f"Error syncing slash commands: {e}")
-    await bot.change_presence(activity=discord.Game(name=f"{RAW_PREFIX}cmds | /bot-setup"))
+    if not hasattr(bot, "_presence_task_started"):
+        bot._presence_task_started = True
+        bot.loop.create_task(rotate_presence())
 
 
 @bot.event
@@ -92,7 +113,5 @@ if __name__ == "__main__":
         raise SystemExit("The DISCORD_TOKEN environment variable is not set.")
 
     keep_alive()
-
-    import asyncio
 
     asyncio.run(main())
