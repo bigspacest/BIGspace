@@ -21,6 +21,15 @@ COLOR_WARN = 0xFEE75C
 COLOR_INFO = 0x5865F2
 COLOR_NEUTRAL = 0x2B2D31
 
+# Custom server emojis used across every embed/message in the bot.
+EMOJI_CLOCK = "<:RelojEmoji:1549862614388047922>"
+EMOJI_HOURGLASS = "<:RelojArenaEmoji:1549862582368735252>"
+EMOJI_PEN = "<:PlumaEmoji:1549862545559650314>"
+EMOJI_SEARCH = "<:Lupaemoji:1549862512898482358>"
+EMOJI_DENIED = "<:DenegadoEmoji:1549862488840085685>"
+EMOJI_WARNING = "<:AvisoEmoji:1549862461690220724>"
+EMOJI_CHECK = "<:Aceptar:1549862432128770098>"
+
 # Discord's max timeout duration is 28 days
 MAX_TIMEOUT_SECONDS = 28 * 24 * 3600
 
@@ -68,12 +77,12 @@ def make_embed(
     return embed
 
 
-def success_embed(description: str, title: str = "✅ Done") -> discord.Embed:
-    return make_embed(title=title, description=description, color=COLOR_SUCCESS)
+def success_embed(description: str, title: str = None) -> discord.Embed:
+    return make_embed(title=title or f"{EMOJI_CHECK} Done", description=description, color=COLOR_SUCCESS)
 
 
-def error_embed(description: str, title: str = "❌ Error") -> discord.Embed:
-    return make_embed(title=title, description=description, color=COLOR_ERROR)
+def error_embed(description: str, title: str = None) -> discord.Embed:
+    return make_embed(title=title or f"{EMOJI_DENIED} Error", description=description, color=COLOR_ERROR)
 
 
 # ---------------------------------------------------------------------------
