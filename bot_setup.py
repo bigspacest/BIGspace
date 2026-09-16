@@ -128,13 +128,13 @@ class BotSetup(commands.Cog):
 
     @app_commands.command(name="bot-setup", description="Configure the bot's general settings")
     @app_commands.checks.has_permissions(administrator=True)
-    async def bot_setup(self, interaction: discord.Interaction):
+    async def botsetup_command(self, interaction: discord.Interaction):
         config = await get_guild_config(interaction.guild_id)
         view = BotSetupView(interaction.guild_id, config, interaction.user.id)
         await interaction.response.send_message(embed=view.build_panel_embed(), view=view, ephemeral=True)
 
-    @bot_setup.error
-    async def bot_setup_error(self, interaction: discord.Interaction, error):
+    @botsetup_command.error
+    async def botsetup_command_error(self, interaction: discord.Interaction, error):
         if isinstance(error, app_commands.MissingPermissions):
             await interaction.response.send_message(
                 embed=error_embed("You need administrator permissions to use this command."),
