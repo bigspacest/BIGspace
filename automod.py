@@ -13,7 +13,7 @@ import discord
 from discord.ext import commands
 
 from database import get_guild_config, add_warn
-from utils import make_embed, COLOR_WARN, COLOR_ERROR
+from utils import make_embed, COLOR_WARN, COLOR_ERROR, EMOJI_WARNING, EMOJI_DENIED
 
 INVITE_REGEX = re.compile(
     r"(discord\.gg|discord(?:app)?\.com/invite|dsc\.gg)/\S+", re.IGNORECASE
@@ -62,7 +62,7 @@ class AutoMod(commands.Cog):
         try:
             await member.send(
                 embed=make_embed(
-                    title="⚠️ Automatic warning",
+                    title=f"{EMOJI_WARNING} Automatic warning",
                     description=(
                         f"You received a warning in **{message.guild.name}**.\n"
                         f"**Reason:** {reason}\n"
@@ -115,7 +115,7 @@ class AutoMod(commands.Cog):
         )
 
         embed = make_embed(
-            title="🚨 Auto-mod: invite link detected",
+            title=f"{EMOJI_DENIED} Auto-mod: invite link detected",
             description=description,
             color=COLOR_ERROR,
         )
