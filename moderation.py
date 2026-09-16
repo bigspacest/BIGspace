@@ -29,6 +29,13 @@ from utils import (
     format_duration,
     MAX_TIMEOUT_SECONDS,
     COLOR_INFO,
+    EMOJI_CLOCK,
+    EMOJI_HOURGLASS,
+    EMOJI_PEN,
+    EMOJI_SEARCH,
+    EMOJI_DENIED,
+    EMOJI_WARNING,
+    EMOJI_CHECK,
 )
 
 
@@ -48,7 +55,7 @@ class Moderation(commands.Cog):
         overwrite.send_messages = False
         await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
         await ctx.reply(
-            embed=success_embed(f"{channel.mention} has been locked.", title="🔒 Channel locked"),
+            embed=success_embed(f"{channel.mention} has been locked.", title=f"{EMOJI_DENIED} Channel locked"),
             mention_author=False,
         )
 
@@ -60,7 +67,7 @@ class Moderation(commands.Cog):
         overwrite.send_messages = None
         await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
         await ctx.reply(
-            embed=success_embed(f"{channel.mention} has been unlocked.", title="🔓 Channel unlocked"),
+            embed=success_embed(f"{channel.mention} has been unlocked.", title=f"{EMOJI_CHECK} Channel unlocked"),
             mention_author=False,
         )
 
@@ -77,7 +84,7 @@ class Moderation(commands.Cog):
             if seconds
             else f"Slowmode disabled in {channel.mention}."
         )
-        await ctx.reply(embed=success_embed(desc, title="🐌 Slowmode"), mention_author=False)
+        await ctx.reply(embed=success_embed(desc, title=f"{EMOJI_CLOCK} Slowmode"), mention_author=False)
 
     # -----------------------------------------------------------------
     # Mute / Unmute (Discord native timeout)
@@ -110,7 +117,7 @@ class Moderation(commands.Cog):
         await ctx.reply(
             embed=success_embed(
                 f"{member.mention} has been muted.\n**Duration:** {format_duration(seconds)}\n**Reason:** {reason}",
-                title="🔇 Member muted",
+                title=f"{EMOJI_HOURGLASS} Member muted",
             ),
             mention_author=False,
         )
@@ -118,7 +125,7 @@ class Moderation(commands.Cog):
         try:
             await member.send(
                 embed=make_embed(
-                    title="🔇 You have been muted",
+                    title=f"{EMOJI_HOURGLASS} You have been muted",
                     description=f"Server: **{ctx.guild.name}**\nDuration: {format_duration(seconds)}\nReason: {reason}",
                     color=COLOR_INFO,
                 )
@@ -137,7 +144,7 @@ class Moderation(commands.Cog):
         except discord.Forbidden:
             await ctx.reply(embed=error_embed("I don't have permission to remove this member's timeout."), mention_author=False)
             return
-        await ctx.reply(embed=success_embed(f"{member.mention} has been unmuted.", title="🔊 Member unmuted"), mention_author=False)
+        await ctx.reply(embed=success_embed(f"{member.mention} has been unmuted.", title=f"{EMOJI_CHECK} Member unmuted"), mention_author=False)
 
     # -----------------------------------------------------------------
     # Warns
@@ -150,14 +157,14 @@ class Moderation(commands.Cog):
         await ctx.reply(
             embed=success_embed(
                 f"{member.mention} has been warned.\n**Reason:** {reason}\n**Total warnings:** {count}",
-                title="⚠️ Warning logged",
+                title=f"{EMOJI_WARNING} Warning logged",
             ),
             mention_author=False,
         )
         try:
             await member.send(
                 embed=make_embed(
-                    title="⚠️ You received a warning",
+                    title=f"{EMOJI_WARNING} You received a warning",
                     description=f"Server: **{ctx.guild.name}**\nReason: {reason}\nTotal warnings: {count}",
                     color=COLOR_INFO,
                 )
@@ -179,13 +186,13 @@ class Moderation(commands.Cog):
     async def warnings(self, ctx: commands.Context, member: discord.Member):
         warns = await get_warns(ctx.guild.id, member.id)
         if not warns:
-            await ctx.reply(embed=make_embed(title="📋 Warnings", description=f"{member.mention} has no warnings."), mention_author=False)
+            await ctx.reply(embed=make_embed(title=f"{EMOJI_SEARCH} Warnings", description=f"{member.mention} has no warnings."), mention_author=False)
             return
         lines = []
         for i, w in enumerate(warns, start=1):
             lines.append(f"**#{i}** — {w['reason']} (by <@{w['moderator_id']}>)")
         await ctx.reply(
-            embed=make_embed(title=f"📋 Warnings for {member.display_name}", description="\n".join(lines), color=COLOR_INFO),
+            embed=make_embed(title=f"{EMOJI_SEARCH} Warnings for {member.display_name}", description="\n".join(lines), color=COLOR_INFO),
             mention_author=False,
         )
 
@@ -213,11 +220,11 @@ class Moderation(commands.Cog):
     async def viewnotes(self, ctx: commands.Context, member: discord.Member):
         notes = await get_notes(ctx.guild.id, member.id)
         if not notes:
-            await ctx.reply(embed=make_embed(title="🗒️ Notes", description=f"{member.mention} has no notes."), mention_author=False)
+            await ctx.reply(embed=make_embed(title=f"{EMOJI_PEN} Notes", description=f"{member.mention} has no notes."), mention_author=False)
             return
         lines = [f"**#{i}** — {n['content']} (by <@{n['moderator_id']}>)" for i, n in enumerate(notes, start=1)]
         await ctx.reply(
-            embed=make_embed(title=f"🗒️ Notes for {member.display_name}", description="\n".join(lines), color=COLOR_INFO),
+            embed=make_embed(title=f"{EMOJI_PEN} Notes for {member.display_name}", description="\n".join(lines), color=COLOR_INFO),
             mention_author=False,
         )
 
@@ -230,12 +237,12 @@ class Moderation(commands.Cog):
     async def ban(self, ctx: commands.Context, member: discord.Member, *, reason: str = "No reason specified"):
         try:
             await member.send(
-                embed=make_embed(title="🔨 You have been banned", description=f"Server: **{ctx.guild.name}**\nReason: {reason}", color=COLOR_INFO)
+                embed=make_embed(title=f"{EMOJI_DENIED} You have been banned", description=f"Server: **{ctx.guild.name}**\nReason: {reason}", color=COLOR_INFO)
             )
         except discord.Forbidden:
             pass
         await ctx.guild.ban(member, reason=f"{reason} | Sanctioned by {ctx.author}")
-        await ctx.reply(embed=success_embed(f"{member.mention} has been banned.\n**Reason:** {reason}", title="🔨 Member banned"), mention_author=False)
+        await ctx.reply(embed=success_embed(f"{member.mention} has been banned.\n**Reason:** {reason}", title=f"{EMOJI_DENIED} Member banned"), mention_author=False)
 
     @commands.command(name="tempban")
     @staff_only()
@@ -249,7 +256,7 @@ class Moderation(commands.Cog):
         try:
             await member.send(
                 embed=make_embed(
-                    title="🔨 You have been temporarily banned",
+                    title=f"{EMOJI_HOURGLASS} You have been temporarily banned",
                     description=f"Server: **{ctx.guild.name}**\nDuration: {format_duration(seconds)}\nReason: {reason}",
                     color=COLOR_INFO,
                 )
@@ -261,7 +268,7 @@ class Moderation(commands.Cog):
         await ctx.reply(
             embed=success_embed(
                 f"{member.mention} has been banned for {format_duration(seconds)}.\n**Reason:** {reason}",
-                title="🔨 Temporary ban applied",
+                title=f"{EMOJI_HOURGLASS} Temporary ban applied",
             ),
             mention_author=False,
         )
@@ -299,7 +306,7 @@ class Moderation(commands.Cog):
             await ctx.reply(embed=error_embed("Amount must be between 1 and 100."), mention_author=False)
             return
         deleted = await ctx.channel.purge(limit=amount + 1)
-        msg = await ctx.send(embed=success_embed(f"Deleted {len(deleted) - 1} messages.", title="🧹 Chat cleared"))
+        msg = await ctx.send(embed=success_embed(f"Deleted {len(deleted) - 1} messages.", title=f"{EMOJI_CHECK} Chat cleared"))
         import asyncio
 
         await asyncio.sleep(4)
@@ -314,7 +321,7 @@ class Moderation(commands.Cog):
         member = member or ctx.author
         roles = ", ".join(r.mention for r in member.roles if r != ctx.guild.default_role) or "None"
         embed = make_embed(
-            title=f"👤 Info for {member.display_name}",
+            title=f"{EMOJI_SEARCH} Info for {member.display_name}",
             color=COLOR_INFO,
             description=(
                 f"**User:** {member.mention} (`{member.id}`)\n"
@@ -332,7 +339,7 @@ class Moderation(commands.Cog):
         try:
             await member.send(
                 embed=make_embed(
-                    title=f"📩 Message from {ctx.guild.name}",
+                    title=f"{EMOJI_PEN} Message from {ctx.guild.name}",
                     description=message,
                     color=COLOR_INFO,
                 )
@@ -344,21 +351,43 @@ class Moderation(commands.Cog):
     @commands.command(name="cmds")
     async def cmds(self, ctx: commands.Context):
         prefix = ctx.prefix
-        lines = [
-            f"`{prefix}lock` / `{prefix}unlock` — Lock/unlock a channel",
-            f"`{prefix}mute` / `{prefix}unmute` — Timeout/remove timeout from a member",
-            f"`{prefix}warn` / `{prefix}delwarn` / `{prefix}warnings` — Warning system",
-            f"`{prefix}addnote` / `{prefix}removenote` / `{prefix}viewnotes` — Internal staff notes",
-            f"`{prefix}slowmode` — Set a channel's slowmode",
-            f"`{prefix}ban` / `{prefix}tempban` / `{prefix}unban` — Ban system",
-            f"`{prefix}clear` — Delete messages",
-            f"`{prefix}userinfo` — View info about a member",
-            f"`{prefix}dm` — Send a member a direct message",
-        ]
-        await ctx.reply(
-            embed=make_embed(title="📖 Available commands", description="\n".join(lines), color=COLOR_INFO),
-            mention_author=False,
+        embed = make_embed(
+            title=f"{EMOJI_SEARCH} Available Commands",
+            description=f"Here's everything you can do with `{prefix}` commands.\u200b\n\u200b",
+            color=COLOR_INFO,
         )
+        embed.add_field(
+            name=f"{EMOJI_DENIED} Channel",
+            value=f"`{prefix}lock`\n`{prefix}unlock`\n`{prefix}slowmode`",
+            inline=True,
+        )
+        embed.add_field(
+            name=f"{EMOJI_HOURGLASS} Mute",
+            value=f"`{prefix}mute`\n`{prefix}unmute`",
+            inline=True,
+        )
+        embed.add_field(
+            name=f"{EMOJI_WARNING} Warnings",
+            value=f"`{prefix}warn`\n`{prefix}delwarn`\n`{prefix}warnings`",
+            inline=True,
+        )
+        embed.add_field(
+            name=f"{EMOJI_PEN} Notes",
+            value=f"`{prefix}addnote`\n`{prefix}removenote`\n`{prefix}viewnotes`",
+            inline=True,
+        )
+        embed.add_field(
+            name=f"{EMOJI_DENIED} Bans",
+            value=f"`{prefix}ban`\n`{prefix}tempban`\n`{prefix}unban`",
+            inline=True,
+        )
+        embed.add_field(
+            name=f"{EMOJI_SEARCH} Utility",
+            value=f"`{prefix}clear`\n`{prefix}userinfo`\n`{prefix}dm`",
+            inline=True,
+        )
+        embed.set_footer(text="\u200b")
+        await ctx.reply(embed=embed, mention_author=False)
 
     # -----------------------------------------------------------------
     # Common error handling for these commands
